@@ -21,7 +21,6 @@ class Node(NodeAbstract):
         self.childrens = []
         self.parent = None
 
-
     # def __str__(self) -> str:
     #     query = ''
     #     visited = set()
@@ -72,10 +71,10 @@ class Node(NodeAbstract):
 
         return not any(errors), errors
 
+
 class UpdateNode(Node):
     KEY = 'update'
     #POSSIBLE_NEAR_CHILDS = [SetUpdateNode]
-    pass
 
 
 class SetUpdateNode(Node):
@@ -110,8 +109,7 @@ def main():
     set3.add_node(where3)
     bad_repeated_statement.add_node(set3)
     bad_repeated_statement.add_node(set2)
-    
-    return {1: statement.validate_tree(), 
+
+    return {1: statement.validate_tree(),
             2: bad_statement.validate_tree(),
             3: bad_repeated_statement.validate_tree()}
-
