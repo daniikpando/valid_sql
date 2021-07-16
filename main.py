@@ -33,18 +33,20 @@ class Node(NodeAbstract):
         self.children = []
         self.parent = None
 
-    # def __str__(self) -> str:
-    #     query = ''
-    #     visited = set()
-    #     def dfs(visited, graph, node, acc):
-    #         if node not in visited:
-    #             visited.add(node)
-    #             acc += f'{node.KEY} {node.content} '
-    #             for neighbour in node.childrens:
-    #                 dfs(visited, graph, neighbour, acc)
-    #         return acc
+    def __str__(self) -> str:
+        query = ''
+        visited = set()
+        nonvisited = set([self])
+        while nonvisited:
+            node = nonvisited.pop()
+            if node not in visited:
+                visited.add(node)
+                query += f'{node.KEY} {node.content} '
 
-    #     return dfs(visited, self.childrens, self, query)
+            nonvisited.update(node.children)
+
+        query += ';'
+        return query
 
     # def __iter__(self):
     #     "implement the iterator protocol"
@@ -53,6 +55,7 @@ class Node(NodeAbstract):
     #     yield self.value
 
     def add_node(self, node):
+        # TODO: add all child nodes and add a weight to be able to order
         node.parent = self
         self.children.append(node)
 
@@ -63,8 +66,10 @@ class Node(NodeAbstract):
         for child in self.children:
             child_class = child.__class__
             if child_class in node_classes:
-                errors.append({'current_node': child.KEY,
-                               'parent_node': child.parent.KEY})
+                errors.append({'error': 'repeated_keys_not_valid',
+                               'detail': {
+                                   'current_node': child.KEY,
+                                   'parent_node': child.parent.KEY}})
                 break
             node_classes.append(child_class)
 
@@ -77,7 +82,6 @@ class Node(NodeAbstract):
         visited = set()
         nonvisited = set([self])
         errors = []
-        nonvisited.update(self.children)
         while nonvisited:
             item = nonvisited.pop()
             # already seen
@@ -89,8 +93,11 @@ class Node(NodeAbstract):
             if item.POSSIBLE_NEAR_PARENT:
                 valid = item.parent.__class__ in item.POSSIBLE_NEAR_PARENT
                 if not valid:
-                    errors.append({'current_node': item.KEY,
-                                   'parent_node': item.parent.KEY})
+                    errors.append({'error': 'not_valid_SQL_structure',
+                                   'detail': {
+                                       'current_node': item.KEY,
+                                       'parent_node': item.parent.KEY
+                                   }})
 
             # validate if any children repeated
             err = item.validate_if_any_repeated_node()
@@ -140,6 +147,7 @@ def main():
     bad_repeated_statement.add_node(set3)
     bad_repeated_statement.add_node(set2)
 
+    print(statement)
     return {1: statement.validate_tree(),
             2: bad_statement.validate_tree(),
             3: bad_repeated_statement.validate_tree()}
