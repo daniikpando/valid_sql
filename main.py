@@ -27,6 +27,7 @@ class NodeAbstract(abc.ABC):
 class Node(NodeAbstract):
     POSSIBLE_NEAR_PARENT = []
     # POSSIBLE_NEAR_CHILDS = []
+    IS_ROOT = True
 
     def __init__(self, content=None) -> None:
         self.content = content
@@ -111,17 +112,20 @@ class Node(NodeAbstract):
 
 class UpdateNode(Node):
     KEY = 'update'
+    IS_ROOT = True
     #POSSIBLE_NEAR_CHILDS = [SetUpdateNode]
 
 
 class SetUpdateNode(Node):
     KEY = 'set'
+    IS_ROOT = False
     POSSIBLE_NEAR_PARENT = [UpdateNode]
     # POSSIBLE_NEAR_CHILDS = ["WhereUpdateNode"]
 
 
 class WhereUpdateNode(Node):
     KEY = 'where'
+    IS_ROOT = False
     POSSIBLE_NEAR_PARENT = [SetUpdateNode]
 
 
