@@ -11,6 +11,18 @@ class NodeAbstract(abc.ABC):
     def add_node(self, node):
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def validate_if_any_repeated_node(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def validate_content(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def validate_tree(self, node):
+        raise NotImplementedError
+
 
 class Node(NodeAbstract):
     POSSIBLE_NEAR_PARENT = []
@@ -18,7 +30,7 @@ class Node(NodeAbstract):
 
     def __init__(self, content=None) -> None:
         self.content = content
-        self.childrens = []
+        self.children = []
         self.parent = None
 
     # def __str__(self) -> str:
@@ -42,16 +54,30 @@ class Node(NodeAbstract):
 
     def add_node(self, node):
         node.parent = self
-        self.childrens.append(node)
+        self.children.append(node)
+
+    def validate_if_any_repeated_node(self):
+        node_classes = [self.__class__]
+        errors = []
+
+        for child in self.children:
+            child_class = child.__class__
+            if child_class in node_classes:
+                errors.append({'current_node': child.KEY,
+                               'parent_node': child.parent.KEY})
+                break
+            node_classes.append(child_class)
+
+        return errors
 
     def validate_content(self) -> bool:
         return True
 
     def validate_tree(self):
         visited = set()
-        nonvisited = set(self)
+        nonvisited = set([self])
         errors = []
-        nonvisited.update(self.childrens)
+        nonvisited.update(self.children)
         while nonvisited:
             item = nonvisited.pop()
             # already seen
@@ -66,8 +92,12 @@ class Node(NodeAbstract):
                     errors.append({'current_node': item.KEY,
                                    'parent_node': item.parent.KEY})
 
+            # validate if any children repeated
+            err = item.validate_if_any_repeated_node()
+            if err:
+                errors.extend(err)
             # add children
-            nonvisited.update(item.childrens)
+            nonvisited.update(item.children)
 
         return not any(errors), errors
 
@@ -113,3 +143,7 @@ def main():
     return {1: statement.validate_tree(),
             2: bad_statement.validate_tree(),
             3: bad_repeated_statement.validate_tree()}
+
+
+if __name__ == '__main__':
+    main()
